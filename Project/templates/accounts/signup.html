@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html lang="en" class="dark">
+<html lang="en">
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
@@ -58,15 +58,7 @@
       border border-gray-200
       shadow-xl p-8">
 
-      <!-- Theme Toggle -->
-      <div class="flex justify-end mb-4">
-        <button id="themeToggle"
-          class="rounded-full px-3 py-1 text-sm
-          bg-black/5 dark:bg-black/10
-          border border-black/10">
-          🌙
-        </button>
-      </div>
+
 
       <div class="text-center mb-6">
         <h2 class="text-2xl font-semibold text-slate-900">
@@ -154,23 +146,7 @@
     </div>
   </main>
 
-  <!-- Theme Toggle Script -->
-  <script>
-    const html = document.documentElement;
-    const toggle = document.getElementById("themeToggle");
 
-    if (localStorage.theme === "light") {
-      html.classList.remove("dark");
-      toggle.textContent = "🌙";
-    }
-
-    toggle.onclick = () => {
-      html.classList.toggle("dark");
-      const isDark = html.classList.contains("dark");
-      localStorage.theme = isDark ? "dark" : "light";
-      toggle.textContent = isDark ? "☀️" : "🌙";
-    };
-  </script>
 
 </body>
 </html>

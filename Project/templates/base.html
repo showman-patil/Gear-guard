@@ -34,12 +34,7 @@
     .dark a.brand{ color:#93c5fd; }
     .dark .text-muted{ color: #9aa4b2; }
 
-    /* Compact mode: reduces paddings and font-sizes for dense view */
-    .compact-mode .container{ padding-left: .6rem; padding-right: .6rem; }
-    .compact-mode .card{ padding: .6rem !important; border-radius: 10px; }
-    .compact-mode .field{ padding: .35rem .5rem !important; font-size: .92rem !important; }
-    .compact-mode header .container{ padding-top: .6rem; padding-bottom: .6rem; }
-    .compact-mode .text-sm{ font-size: .78rem !important; }
+
   </style>
   {% block head %}{% endblock %}
 </head>
@@ -85,16 +80,6 @@
 
         <button id="notifBtn" class="p-2 rounded-full bg-white border shadow-sm text-gray-700" aria-label="Notifications">
           <i class="fa-solid fa-bell"></i>
-        </button>
-
-        <!-- Theme toggle -->
-        <button id="themeToggle" class="p-2 rounded-full bg-white border shadow-sm text-gray-700" aria-label="Toggle dark mode" title="Toggle dark mode">
-          <i id="themeIcon" class="fa-solid fa-moon"></i>
-        </button>
-
-        <!-- Compact mode toggle -->
-        <button id="compactToggle" class="p-2 rounded-full bg-white border shadow-sm text-gray-700" aria-label="Toggle compact mode" title="Toggle compact mode">
-          <i id="compactIcon" class="fa-solid fa-compress"></i>
         </button>
 
         <div class="hidden md:block">
@@ -179,40 +164,7 @@
       }
     })();
 
-    // Theme & compact mode (site-wide) - store in localStorage key 'gg_settings'
-    (function(){
-      const STORAGE_KEY = 'gg_settings';
-      function loadSettings(){ try { return JSON.parse(localStorage.getItem(STORAGE_KEY) || '{}'); } catch(e){ return {}; } }
-      function saveSettings(s){ localStorage.setItem(STORAGE_KEY, JSON.stringify(s || {})); }
 
-      const themeBtn = document.getElementById('themeToggle');
-      const themeIcon = document.getElementById('themeIcon');
-      const compactBtn = document.getElementById('compactToggle');
-      const compactIcon = document.getElementById('compactIcon');
-
-      function apply(){
-        const s = loadSettings();
-        document.documentElement.classList.toggle('dark', !!s.darkMode);
-        document.body.classList.toggle('compact-mode', !!s.compactMode);
-        if (themeIcon) themeIcon.className = (!!s.darkMode) ? 'fa-solid fa-sun' : 'fa-solid fa-moon';
-        if (compactIcon) compactIcon.className = (!!s.compactMode) ? 'fa-solid fa-compress-wide' : 'fa-solid fa-compress';
-        if (themeBtn) themeBtn.setAttribute('aria-pressed', !!s.darkMode);
-        if (compactBtn) compactBtn.setAttribute('aria-pressed', !!s.compactMode);
-      }
-
-      apply();
-
-      if (themeBtn) themeBtn.addEventListener('click', ()=>{
-        const s = loadSettings(); s.darkMode = !s.darkMode; saveSettings(s); apply();
-      });
-
-      if (compactBtn) compactBtn.addEventListener('click', ()=>{
-        const s = loadSettings(); s.compactMode = !s.compactMode; saveSettings(s); apply();
-      });
-
-      // Sync across tabs
-      window.addEventListener('storage', (e)=>{ if (e.key === STORAGE_KEY) apply(); });
-    })();
   </script>
 
   {% block scripts %}{% endblock %}

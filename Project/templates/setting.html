@@ -18,6 +18,13 @@
 .toggle[data-checked='true'] { background: var(--accent); }
 .toggle[data-checked='true']::after { transform: translateX(22px); }
 
+/* Scoped dark theme for settings page only (uses main.settings-dark) */
+main.settings-dark{ background: linear-gradient(180deg,#071026 0%, #071428 100%); color: #e6edf3; }
+main.settings-dark .card{ background: rgba(255,255,255,0.03); box-shadow: 0 8px 40px rgba(2,6,23,0.6); border: 1px solid rgba(255,255,255,0.03); color: #e6edf3; }
+main.settings-dark .field{ background: rgba(255,255,255,0.02); border-color: rgba(255,255,255,0.06); color: #e6edf3; }
+main.settings-dark .floating-label{ color: #9aa4b2; }
+main.settings-dark .text-muted{ color: #9aa4b2; }
+
 /* Minor responsive tweaks */
 @media (max-width: 640px) {
   .container { padding-left: 1rem; padding-right: 1rem; }
@@ -73,10 +80,7 @@
           <div>Dark Mode</div>
           <div id="darkModeToggle" class="toggle" role="switch" aria-checked="false"></div>
         </div>
-        <div class="flex items-center justify-between p-3 bg-gray-50 rounded-lg">
-          <div>Compact Mode</div>
-          <div id="compactModeToggle" class="toggle" role="switch" aria-checked="false"></div>
-        </div>
+
       </div>
     </section>
 
@@ -149,15 +153,13 @@ function loadSettings() {
 
   // Map boolean toggles
   applyToggle(document.getElementById('darkModeToggle'), !!settings.darkMode);
-  applyToggle(document.getElementById('compactModeToggle'), !!settings.compactMode);
   applyToggle(document.getElementById('emailNotifyToggle'), !!settings.emailNotify);
   applyToggle(document.getElementById('pushNotifyToggle'), !!settings.pushNotify);
   applyToggle(document.getElementById('maintenanceNotifyToggle'), !!settings.maintenanceNotify);
   applyToggle(document.getElementById('autoAssignToggle'), !!settings.autoAssign);
   applyToggle(document.getElementById('confirmScrapToggle'), !!settings.confirmScrap);
 
-  if(settings.darkMode) document.documentElement.classList.add('dark');
-  if(settings.compactMode) document.querySelector('main')?.classList.add('compact-mode');
+  if(settings.darkMode) document.querySelector('main')?.classList.add('settings-dark');
 }
 
 function toggleSetting(key, value) {
@@ -166,15 +168,14 @@ function toggleSetting(key, value) {
 }
 
 // Wire toggles
-['darkMode','compactMode','emailNotify','pushNotify','maintenanceNotify','autoAssign','confirmScrap'].forEach(key => {
+['darkMode','emailNotify','pushNotify','maintenanceNotify','autoAssign','confirmScrap'].forEach(key => {
   const btn = document.getElementById(key + 'Toggle');
   if(!btn) return;
   btn.addEventListener('click', ()=>{
     const checked = btn.getAttribute('data-checked') === 'true' ? false : true;
     applyToggle(btn, checked);
     toggleSetting(key, checked);
-    if(key === 'darkMode') document.documentElement.classList.toggle('dark', checked);
-    if(key === 'compactMode') document.querySelector('main')?.classList.toggle('compact-mode', checked);
+    if(key === 'darkMode') document.querySelector('main')?.classList.toggle('settings-dark', checked);
   });
 });
 
