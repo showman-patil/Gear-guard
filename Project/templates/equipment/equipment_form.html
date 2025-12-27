@@ -1,0 +1,110 @@
+{% extends 'base.html' %}
+
+{% block title %}Add Equipment — GearGuard{% endblock %}
+
+{% block content %}
+<div class="max-w-4xl mx-auto space-y-6">
+
+  <!-- HEADER -->
+  <div class="flex items-center justify-between">
+    <div>
+      <h1 class="text-3xl font-extrabold text-gray-800 flex items-center gap-2">
+        ➕ Add Equipment
+      </h1>
+      <p class="text-sm text-gray-500 mt-1">
+        Register a new asset into the system
+      </p>
+    </div>
+
+    <a href="{% url 'equipment_list' %}"
+       class="px-4 py-2 rounded-lg bg-gray-100 hover:bg-gray-200 text-sm font-medium">
+      ← Back to Equipment
+    </a>
+  </div>
+
+  <!-- FORM CARD -->
+  <div class="card p-8">
+
+    <form method="POST" class="grid grid-cols-1 md:grid-cols-2 gap-6">
+      {% csrf_token %}
+
+      <!-- NAME -->
+      <div>
+        <label class="text-sm font-semibold text-gray-700 mb-1 block">
+          Equipment Name
+        </label>
+        {{ form.name }}
+      </div>
+
+      <!-- SERIAL -->
+      <div>
+        <label class="text-sm font-semibold text-gray-700 mb-1 block">
+          Serial Number
+        </label>
+        {{ form.serial_number }}
+      </div>
+
+      <!-- DEPARTMENT -->
+      <div>
+        <label class="text-sm font-semibold text-gray-700 mb-1 block">
+          Department
+        </label>
+        {{ form.department }}
+      </div>
+
+      <!-- LOCATION -->
+      <div>
+        <label class="text-sm font-semibold text-gray-700 mb-1 block">
+          Location
+        </label>
+        {{ form.location }}
+      </div>
+
+      <!-- MAINTENANCE TEAM -->
+      <div>
+        <label class="text-sm font-semibold text-gray-700 mb-1 block">
+          Maintenance Team
+        </label>
+        {{ form.maintenance_team }}
+      </div>
+
+      <!-- STATUS -->
+      <div>
+        <label class="text-sm font-semibold text-gray-700 mb-1 block">
+          Status
+        </label>
+        {{ form.status }}
+      </div>
+
+      <!-- PURCHASE DATE -->
+      <div>
+        <label class="text-sm font-semibold text-gray-700 mb-1 block">
+          Purchase Date
+        </label>
+        {{ form.purchase_date }}
+      </div>
+
+      <!-- WARRANTY -->
+      <div>
+        <label class="text-sm font-semibold text-gray-700 mb-1 block">
+          Warranty End
+        </label>
+        {{ form.warranty_end }}
+      </div>
+
+      <!-- ACTIONS -->
+      <div class="md:col-span-2 flex justify-end gap-4 pt-6 border-t">
+        <a href="{% url 'equipment_list' %}"
+           class="px-5 py-2 rounded-lg bg-gray-100 hover:bg-gray-200 text-sm font-medium">
+          Cancel
+        </a>
+        <button type="submit"
+                class="px-6 py-2 rounded-lg bg-indigo-600 hover:bg-indigo-700 text-white text-sm font-semibold shadow">
+          💾 Save Equipment
+        </button>
+      </div>
+
+    </form>
+  </div>
+</div>
+{% endblock %}

@@ -1,0 +1,176 @@
+<!DOCTYPE html>
+<html lang="en" class="dark">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+
+  <!-- Tailwind -->
+  <script src="https://cdn.tailwindcss.com"></script>
+
+  <!-- Icons -->
+  <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css" rel="stylesheet">
+
+  <title>Create Account — GearGuard</title>
+
+  <script>
+    tailwind.config = {
+      darkMode: 'class'
+    }
+  </script>
+</head>
+
+<body class="min-h-screen bg-slate-100 dark:bg-slate-950 text-slate-900 dark:text-white flex overflow-hidden transition-colors duration-300">
+
+  <!-- LEFT PANEL -->
+  <aside class="hidden lg:flex w-1/2 relative items-center justify-center">
+
+    <div class="absolute -top-20 -left-14 w-[26rem] h-[26rem] bg-indigo-600/20 blur-3xl rounded-full"></div>
+    <div class="absolute bottom-0 right-0 w-[30rem] h-[30rem] bg-pink-500/20 blur-3xl rounded-full"></div>
+
+    <div class="relative z-10 max-w-xl px-14">
+      <p class="uppercase tracking-wide text-sm text-slate-500 dark:text-gray-300">
+        Welcome to GearGuard
+      </p>
+
+      <h1 class="mt-5 text-4xl font-bold leading-tight">
+        Create your account
+        <span class="text-indigo-500 dark:text-indigo-400">and get started</span>
+      </h1>
+
+      <p class="mt-4 text-slate-600 dark:text-gray-300 text-sm leading-relaxed">
+        Manage your equipment, teams, and maintenance workflows — all in one place.
+      </p>
+
+      <ul class="mt-6 space-y-2 text-slate-600 dark:text-gray-300 text-sm">
+        <li>• Fast and intuitive setup</li>
+        <li>• Collaboration ready</li>
+        <li>• Secure authentication</li>
+      </ul>
+    </div>
+
+  </aside>
+
+  <!-- RIGHT PANEL -->
+  <main class="flex w-full lg:w-1/2 items-center justify-center px-6 sm:px-10">
+
+    <div class="w-full max-w-md rounded-3xl
+      bg-white dark:bg-white
+      border border-gray-200
+      shadow-xl p-8">
+
+      <!-- Theme Toggle -->
+      <div class="flex justify-end mb-4">
+        <button id="themeToggle"
+          class="rounded-full px-3 py-1 text-sm
+          bg-black/5 dark:bg-black/10
+          border border-black/10">
+          🌙
+        </button>
+      </div>
+
+      <div class="text-center mb-6">
+        <h2 class="text-2xl font-semibold text-slate-900">
+          Create Account
+        </h2>
+        <p class="text-slate-600 text-sm mt-1">
+          Fill in your details to continue
+        </p>
+      </div>
+
+      {% if messages %}
+      <div class="mb-4 space-y-2">
+        {% for message in messages %}
+        <div class="rounded-md px-4 py-2 text-sm border
+          {% if message.tags == 'error' %}
+            bg-red-600/80 border-red-400 text-white
+          {% else %}
+            bg-green-600/80 border-green-400 text-white
+          {% endif %}">
+          {{ message }}
+        </div>
+        {% endfor %}
+      </div>
+      {% endif %}
+
+      <form method="POST" class="space-y-4" novalidate>
+        {% csrf_token %}
+
+        <div>
+          <label class="text-sm text-slate-700">Username</label>
+          <input name="username" required
+            class="mt-1 w-full px-4 py-2.5 rounded-xl
+            bg-white border border-gray-200
+            text-slate-900 placeholder-slate-400
+            focus:ring-2 focus:ring-indigo-500">
+        </div>
+
+        <div>
+          <label class="text-sm text-slate-700">Email</label>
+          <input type="email" name="email" required
+            class="mt-1 w-full px-4 py-2.5 rounded-xl
+            bg-white border border-gray-200
+            text-slate-900 placeholder-slate-400
+            focus:ring-2 focus:ring-indigo-500">
+        </div>
+
+        <div class="grid grid-cols-2 gap-3">
+          <div>
+            <label class="text-sm text-slate-700">Password</label>
+            <input id="id_password" type="password" name="password" required
+              class="mt-1 w-full px-4 py-2.5 rounded-xl
+              bg-white border border-gray-200
+              text-slate-900 focus:ring-2 focus:ring-indigo-500">
+          </div>
+
+          <div>
+            <label class="text-sm text-slate-700">Confirm</label>
+            <input id="id_confirm" type="password" name="confirm" required
+              class="mt-1 w-full px-4 py-2.5 rounded-xl
+              bg-white border border-gray-200
+              text-slate-900 focus:ring-2 focus:ring-indigo-500">
+          </div>
+        </div>
+
+        <label class="flex items-center gap-2 text-sm text-slate-700 mt-1">
+          <input type="checkbox" class="accent-indigo-500" required>
+          I agree to the
+          <a href="#" class="text-indigo-600 underline">Terms & Privacy</a>
+        </label>
+
+        <button
+          class="w-full py-3 rounded-xl
+          bg-indigo-600 hover:bg-indigo-700
+          text-white font-semibold shadow-md">
+          Create Account
+        </button>
+
+        <p class="text-center text-slate-600 text-sm mt-3">
+          Already registered?
+          <a href="{% url 'login' %}" class="text-indigo-600 underline">
+            Login
+          </a>
+        </p>
+      </form>
+    </div>
+  </main>
+
+  <!-- Theme Toggle Script -->
+  <script>
+    const html = document.documentElement;
+    const toggle = document.getElementById("themeToggle");
+
+    if (localStorage.theme === "light") {
+      html.classList.remove("dark");
+      toggle.textContent = "🌙";
+    }
+
+    toggle.onclick = () => {
+      html.classList.toggle("dark");
+      const isDark = html.classList.contains("dark");
+      localStorage.theme = isDark ? "dark" : "light";
+      toggle.textContent = isDark ? "☀️" : "🌙";
+    };
+  </script>
+
+</body>
+</html>

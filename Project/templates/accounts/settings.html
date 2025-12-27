@@ -1,0 +1,46 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Settings — GearGuard</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+</head>
+<body class="bg-gray-100 min-h-screen text-gray-800">
+  <header class="bg-white shadow">
+    <div class="max-w-7xl mx-auto px-4 py-4 flex items-center justify-between">
+      <h1 class="text-lg font-semibold">Settings</h1>
+      <nav class="space-x-3">
+        <a href="{% url 'dashboard' %}" class="text-sm text-gray-600 hover:text-gray-900">Dashboard</a>
+        <a href="{% url 'profile' %}" class="text-sm text-indigo-600 font-medium">Profile</a>
+        <a href="{% url 'logout' %}" class="text-sm text-red-600">Logout</a>
+      </nav>
+    </div>
+  </header>
+
+  <main class="max-w-4xl mx-auto p-6">
+    <div class="bg-white rounded-xl shadow p-6">
+      <h2 class="text-xl font-semibold mb-4">Account settings</h2>
+      <form method="post" class="space-y-4">
+        {% csrf_token %}
+        <div>
+          <label class="block text-sm text-gray-600">Theme preference</label>
+          <select name="theme" class="mt-1 px-3 py-2 border rounded">
+            <option value="auto" {% if current_theme == 'auto' %}selected{% endif %}>Auto (system)</option>
+            <option value="light" {% if current_theme == 'light' %}selected{% endif %}>Light</option>
+            <option value="dark" {% if current_theme == 'dark' %}selected{% endif %}>Dark</option>
+          </select>
+        </div>
+
+        <div>
+          <button class="px-4 py-2 bg-indigo-600 text-white rounded">Save settings</button>
+        </div>
+      </form>
+
+      <div class="mt-6 text-sm text-gray-600">
+        <p>This page stores preferences in the session for now. If you want persistent per-user preferences, I can add a Profile model with fields and media support.</p>
+      </div>
+    </div>
+  </main>
+</body>
+</html>

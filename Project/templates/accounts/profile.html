@@ -1,0 +1,149 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Profile — GearGuard</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css" rel="stylesheet">
+</head>
+<body class="bg-gray-100 text-gray-800 min-h-screen">
+  <header class="bg-white shadow">
+    <div class="max-w-7xl mx-auto px-4 py-4 flex items-center justify-between">
+      <h1 class="text-lg font-semibold">GearGuard</h1>
+      <nav class="space-x-3">
+        <a href="{% url 'dashboard' %}" class="text-sm text-gray-600 hover:text-gray-900">Dashboard</a>
+        <a href="{% url 'profile' %}" class="text-sm text-indigo-600 font-medium">Profile</a>
+        <a href="{% url 'logout' %}" class="text-sm text-red-600">Logout</a>
+      </nav>
+    </div>
+  </header>
+
+  <main class="max-w-5xl mx-auto p-6">
+    <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+
+      <!-- Profile Card -->
+      <div class="bg-white rounded-xl shadow-soft p-6">
+        <div class="flex items-center gap-4">
+          <div class="w-20 h-20 rounded-full bg-indigo-100 flex items-center justify-center text-indigo-600 text-2xl">
+            {{ user_obj.first_name|default:user_obj.username|slice:":1"|upper }}
+          </div>
+          <div>
+            <h2 class="text-xl font-semibold">{{ user_obj.get_full_name|default:user_obj.username }}</h2>
+            <p class="text-sm text-gray-500">Member since {{ user_obj.date_joined|date:'F Y' }}</p>
+          </div>
+        </div>
+
+        <div class="mt-6">
+          <h3 class="text-sm text-gray-600 font-medium">Contact</h3>
+          <p class="mt-2 text-sm">Email: <span class="text-gray-800 font-medium">{{ user_obj.email }}</span></p>
+        </div>
+
+        <div class="mt-6">
+          <h3 class="text-sm text-gray-600 font-medium">Teams</h3>
+          <ul class="mt-2 space-y-2">
+            {% if teams %}
+              {% for t in teams %}
+                <li class="text-sm text-gray-700">{{ t.name }}</li>
+              {% endfor %}
+            {% else %}
+              <li class="text-sm text-gray-500">No teams assigned</li>
+            {% endif %}
+          </ul>
+        </div>
+
+      </div>
+
+      <!-- Edit form -->
+      <div class="lg:col-span-2 bg-white rounded-xl shadow-soft p-6">
+        <h2 class="text-lg font-semibold mb-4">Profile Settings</h2>
+
+        {% if messages %}
+        <div class="space-y-2 mb-4">
+          {% for message in messages %}
+            <div class="rounded-md px-4 py-2 text-sm border
+              {% if message.tags == 'error' %}
+                bg-red-600/80 border-red-400 text-white
+              {% else %}
+                bg-green-600/80 border-green-400 text-white
+              {% endif %}">
+              {{ message }}
+            </div>
+          {% endfor %}
+        </div>
+        {% endif %}
+
+        <form method="post" class="space-y-4 max-w-2xl">
+          {% csrf_token %}
+          <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+            <div>
+              <label class="block text-sm text-gray-600">First name</label>
+              {{ form.first_name }}
+            </div>
+            <div>
+              <label class="block text-sm text-gray-600">Last name</label>
+              {{ form.last_name }}
+            </div>
+          </div>
+
+          <div>
+            <label class="block text-sm text-gray-600">Email</label>
+            {{ form.email }}
+          </div>
+
+          <div class="flex items-center gap-3">
+            <button class="px-4 py-2 bg-indigo-600 text-white rounded-lg">Save changes</button>
+            {% url 'password_change' as pwd_url %}
+            {% if pwd_url %}
+              <a href="{{ pwd_url }}" class="text-sm text-gray-600 underline">Change password</a>
+            {% endif %}
+          </div>
+        </form>
+
+        <hr class="my-6">
+
+        <div>
+          <h3 class="text-md font-medium">Assigned Work</h3>
+          <p class="text-sm text-gray-500 mt-1">Open assignments</p>
+
+          <div class="mt-3 space-y-3">
+            {% if assigned_open %}
+              {% for r in assigned_open %}
+                <div class="border rounded-lg p-3 flex justify-between items-start">
+                  <div>
+                    <div class="text-sm font-medium">{{ r.title }}</div>
+                    <div class="text-xs text-gray-500">Equipment: {{ r.equipment.name }}</div>
+                    <div class="text-xs text-gray-500">Team: {% if r.team %}{{ r.team.name }}{% else %}Unassigned{% endif %}</div>
+                  </div>
+                  <div class="text-xs text-gray-500">{{ r.status|capfirst }}</div>
+                </div>
+              {% endfor %}
+            {% else %}
+              <div class="text-sm text-gray-500">No open assignments</div>
+            {% endif %}
+          </div>
+        </div>
+
+        <div class="mt-6">
+          <h3 class="text-md font-medium">Past assignments</h3>
+          <div class="mt-3 space-y-2 text-sm text-gray-700">
+            {% if assigned_closed %}
+              {% for r in assigned_closed %}
+                <div class="border rounded-lg p-2 flex justify-between">
+                  <div>{{ r.title }} <span class="text-xs text-gray-500">– {{ r.status|capfirst }}</span></div>
+                  <div class="text-xs text-gray-500">{{ r.created_at|date:'M d, Y' }}</div>
+                </div>
+              {% endfor %}
+            {% else %}
+              <div class="text-sm text-gray-500">No past assignments</div>
+            {% endif %}
+          </div>
+        </div>
+
+      </div>
+
+    </div>
+  </main>
+
+</body>
+</html>

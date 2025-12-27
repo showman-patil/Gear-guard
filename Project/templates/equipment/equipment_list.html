@@ -1,0 +1,145 @@
+{% extends 'base.html' %}
+
+{% block title %}Equipment — GearGuard{% endblock %}
+
+{% block content %}
+<div class="space-y-6">
+
+  <!-- HEADER -->
+  <div class="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
+    <div>
+      <h1 class="text-3xl font-extrabold text-gray-800 flex items-center gap-2">
+        🔧 Equipment Management
+      </h1>
+      <p class="text-sm text-gray-500 mt-1">
+        Track, monitor, and manage all company assets
+      </p>
+    </div>
+
+    <div class="flex items-center gap-3 w-full md:w-auto">
+      <div class="relative flex-1 md:flex-none">
+        <input
+          id="searchInput"
+          type="text"
+          placeholder="Search equipment, team, department..."
+          class="field w-full md:w-72 pl-10 pr-4 py-2 rounded-full shadow-sm"
+        >
+        <span class="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400">
+          <i class="fa-solid fa-magnifying-glass"></i>
+        </span>
+      </div>
+
+      <a href="{% url 'equipment_add' %}"
+         class="inline-flex items-center gap-2 px-4 py-2 rounded-lg bg-gradient-to-r from-indigo-600 to-cyan-600 text-white shadow font-medium">
+        ➕ Add Equipment
+      </a>
+    </div>
+  </div>
+
+  <!-- TABLE CARD -->
+  <div class="card overflow-x-auto">
+    <table class="min-w-full text-sm" id="equipmentTable">
+
+      <thead class="bg-gray-50 text-gray-600 uppercase text-xs tracking-wider">
+        <tr>
+          <th class="px-6 py-4 text-left">Equipment</th>
+          <th class="px-6 py-4 text-left">Serial</th>
+          <th class="px-6 py-4 text-left">Department</th>
+          <th class="px-6 py-4 text-left">Location</th>
+          <th class="px-6 py-4 text-left">Team</th>
+          <th class="px-6 py-4 text-left">Status</th>
+          <th class="px-6 py-4 text-center">Actions</th>
+        </tr>
+      </thead>
+
+      <tbody class="divide-y" id="equipmentBody">
+        {% for eq in equipments %}
+        <tr class="equipment-row hover:bg-indigo-50/40 transition">
+
+          <td class="px-6 py-4 font-semibold text-gray-800">
+            {{ eq.name }}
+          </td>
+
+          <td class="px-6 py-4 text-gray-600">
+            {{ eq.serial_number }}
+          </td>
+
+          <td class="px-6 py-4">
+            <span class="px-2 py-1 rounded-full bg-blue-100 text-blue-700 text-xs font-medium">
+              {{ eq.department }}
+            </span>
+          </td>
+
+          <td class="px-6 py-4 text-gray-600">
+            {{ eq.location }}
+          </td>
+
+          <td class="px-6 py-4">
+            {% if eq.maintenance_team %}
+              <span class="px-2 py-1 rounded-full bg-indigo-100 text-indigo-700 text-xs font-medium">
+                {{ eq.maintenance_team.name }}
+              </span>
+            {% else %}
+              <span class="text-gray-400">—</span>
+            {% endif %}
+          </td>
+
+          <td class="px-6 py-4">
+            {% if eq.status == 'active' %}
+              <span class="px-2 py-1 rounded-full bg-green-100 text-green-700 text-xs font-semibold">
+                Active
+              </span>
+            {% else %}
+              <span class="px-2 py-1 rounded-full bg-red-100 text-red-700 text-xs font-semibold">
+                Scrap
+              </span>
+            {% endif %}
+          </td>
+
+          <td class="px-6 py-4 text-center">
+            <div class="flex justify-center gap-3 text-sm font-medium">
+              <a href="{% url 'equipment_detail' eq.id %}" class="text-indigo-600 hover:underline">
+                View
+              </a>
+              <a href="{% url 'equipment_edit' eq.id %}" class="text-yellow-600 hover:underline">
+                Edit
+              </a>
+              <a href="{% url 'equipment_delete' eq.id %}"
+                 onclick="return confirm('Delete this equipment?')"
+                 class="text-red-600 hover:underline">
+                Delete
+              </a>
+            </div>
+          </td>
+
+        </tr>
+        {% empty %}
+        <tr>
+          <td colspan="7" class="text-center py-12 text-gray-400">
+            No equipment found.
+          </td>
+        </tr>
+        {% endfor %}
+      </tbody>
+
+    </table>
+  </div>
+
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+const searchInput = document.getElementById('searchInput');
+const rows = document.querySelectorAll('.equipment-row');
+
+searchInput.addEventListener('keyup', function () {
+  const value = this.value.toLowerCase();
+  rows.forEach(row => {
+    row.style.display = row.innerText.toLowerCase().includes(value)
+      ? ''
+      : 'none';
+  });
+});
+</script>
+{% endblock %}

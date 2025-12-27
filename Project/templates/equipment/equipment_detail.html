@@ -1,0 +1,129 @@
+{% extends 'base.html' %}
+
+{% block title %}{{ equipment.name }} — GearGuard{% endblock %}
+
+{% block content %}
+<div class="max-w-6xl mx-auto space-y-8">
+
+  <!-- HEADER / HERO -->
+  <div class="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
+    <div>
+      <div class="flex items-center gap-3">
+        <span class="px-3 py-1 rounded-full text-xs font-semibold bg-indigo-100 text-indigo-700">
+          Equipment
+        </span>
+
+        {% if equipment.status == 'active' %}
+          <span class="px-3 py-1 rounded-full text-xs font-semibold bg-green-100 text-green-700">
+            Active
+          </span>
+        {% else %}
+          <span class="px-3 py-1 rounded-full text-xs font-semibold bg-red-100 text-red-700">
+            Scrap
+          </span>
+        {% endif %}
+      </div>
+
+      <h1 class="text-3xl font-extrabold text-gray-800 mt-2">
+        {{ equipment.name }}
+      </h1>
+      <p class="text-sm text-gray-500 mt-1">
+        Equipment details & maintenance overview
+      </p>
+    </div>
+
+    <a href="{% url 'equipment_list' %}"
+       class="inline-flex items-center gap-2 px-4 py-2 rounded-lg bg-gray-100 hover:bg-gray-200 text-sm font-medium">
+      ← Back to Equipment
+    </a>
+  </div>
+
+  <!-- INFO CARDS -->
+  <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+
+    <!-- BASIC INFO -->
+    <div class="card p-6 space-y-4">
+      <h2 class="text-lg font-semibold text-gray-800 flex items-center gap-2">
+        📦 Basic Information
+      </h2>
+
+      <div class="space-y-2 text-sm">
+        <p class="flex justify-between">
+          <span class="text-gray-500">Serial Number</span>
+          <span class="font-medium">{{ equipment.serial_number }}</span>
+        </p>
+        <p class="flex justify-between">
+          <span class="text-gray-500">Department</span>
+          <span class="font-medium">{{ equipment.department }}</span>
+        </p>
+        <p class="flex justify-between">
+          <span class="text-gray-500">Location</span>
+          <span class="font-medium">{{ equipment.location }}</span>
+        </p>
+      </div>
+    </div>
+
+    <!-- MAINTENANCE INFO -->
+    <div class="card p-6 space-y-4">
+      <h2 class="text-lg font-semibold text-gray-800 flex items-center gap-2">
+        🛠 Maintenance Assignment
+      </h2>
+
+      <div class="space-y-2 text-sm">
+        <p class="flex justify-between items-center">
+          <span class="text-gray-500">Maintenance Team</span>
+          {% if equipment.maintenance_team %}
+            <span class="px-2 py-1 rounded bg-indigo-100 text-indigo-700 text-xs font-semibold">
+              {{ equipment.maintenance_team.name }}
+            </span>
+          {% else %}
+            <span class="text-gray-400">—</span>
+          {% endif %}
+        </p>
+
+        {% if equipment.purchase_date %}
+        <p class="flex justify-between">
+          <span class="text-gray-500">Purchase Date</span>
+          <span class="font-medium">{{ equipment.purchase_date }}</span>
+        </p>
+        {% endif %}
+
+        {% if equipment.warranty_end %}
+        <p class="flex justify-between">
+          <span class="text-gray-500">Warranty Ends</span>
+          <span class="font-medium">{{ equipment.warranty_end }}</span>
+        </p>
+        {% endif %}
+      </div>
+    </div>
+
+    <!-- QUICK ACTIONS -->
+    <div class="card p-6 space-y-4">
+      <h2 class="text-lg font-semibold text-gray-800 flex items-center gap-2">
+        ⚡ Quick Actions
+      </h2>
+
+      <div class="flex flex-col gap-3">
+        <a href="{% url 'kanban_board' %}"
+           class="flex items-center justify-between bg-indigo-600 hover:bg-indigo-700 text-white px-4 py-2 rounded-lg text-sm font-semibold shadow">
+          Maintenance Requests
+          <span class="bg-white/20 px-2 py-0.5 rounded text-xs">0</span>
+        </a>
+
+        <a href="{% url 'equipment_edit' equipment.id %}"
+           class="bg-gray-100 hover:bg-gray-200 text-gray-700 px-4 py-2 rounded-lg text-sm font-medium">
+          ✏️ Edit Equipment
+        </a>
+
+        {% if equipment.status == 'scrap' %}
+          <div class="text-sm text-red-600 font-semibold mt-2">
+            ⚠ This equipment is marked as scrap
+          </div>
+        {% endif %}
+      </div>
+    </div>
+
+  </div>
+
+</div>
+{% endblock %}

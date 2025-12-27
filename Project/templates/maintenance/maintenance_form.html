@@ -1,0 +1,150 @@
+{% extends 'base.html' %}
+
+{% block title %}Create Request — GearGuard{% endblock %}
+
+{% block content %}
+<div class="max-w-5xl mx-auto">
+
+  <!-- HEADER -->
+  <div class="mb-8 flex items-center justify-between">
+    <div>
+      <h1 class="text-3xl font-extrabold text-gray-800 flex items-center gap-2">
+        🛠 Create Maintenance Request
+      </h1>
+      <p class="text-sm text-gray-500 mt-1">
+        Log breakdowns or schedule preventive maintenance
+      </p>
+    </div>
+
+    <a href="{% url 'kanban_board' %}"
+       class="inline-flex items-center gap-2 px-4 py-2 rounded-lg bg-gray-100 hover:bg-gray-200 text-sm font-medium">
+      ← Back to Kanban
+    </a>
+  </div>
+
+  <!-- CARD -->
+  <div class="bg-white rounded-2xl shadow-xl border border-gray-100 p-8">
+
+    <form method="POST" class="grid grid-cols-1 md:grid-cols-2 gap-6">
+      {% csrf_token %}
+
+      <!-- TITLE -->
+      <div class="md:col-span-2">
+        <label class="text-sm font-semibold text-gray-700 mb-1 block">
+          Request Title
+        </label>
+        {{ form.title }}
+        {% if form.title.errors %}
+          <p class="text-red-600 text-sm mt-1">{{ form.title.errors.0 }}</p>
+        {% endif %}
+      </div>
+
+      <!-- DESCRIPTION -->
+      <div class="md:col-span-2">
+        <label class="text-sm font-semibold text-gray-700 mb-1 block">
+          Description
+        </label>
+        {{ form.description }}
+        {% if form.description.errors %}
+          <p class="text-red-600 text-sm mt-1">{{ form.description.errors.0 }}</p>
+        {% endif %}
+      </div>
+
+      <!-- EQUIPMENT -->
+      <div>
+        <label class="text-sm font-semibold text-gray-700 mb-1 block">
+          Equipment
+        </label>
+        <select id="equipmentSelect" name="equipment" class="field" required>
+          <option value="">Select equipment</option>
+          {% for eq in equipments %}
+            <option value="{{ eq.id }}" data-team-name="{{ eq.maintenance_team.name|default:'' }}">
+              {{ eq.name }}{% if eq.maintenance_team %} — {{ eq.maintenance_team.name }}{% endif %}
+            </option>
+          {% endfor %}
+        </select>
+      </div>
+
+      <!-- TEAM -->
+      <div>
+        <label class="text-sm font-semibold text-gray-700 mb-1 block">
+          Maintenance Team
+        </label>
+        <input type="text"
+               id="teamDisplay"
+               class="field bg-gray-50 cursor-not-allowed"
+               placeholder="Auto assigned"
+               readonly>
+      </div>
+
+      <!-- REQUEST TYPE -->
+      <div>
+        <label class="text-sm font-semibold text-gray-700 mb-1 block">
+          Request Type
+        </label>
+        {{ form.request_type }}
+      </div>
+
+      <!-- STATUS -->
+      <div>
+        <label class="text-sm font-semibold text-gray-700 mb-1 block">
+          Status
+        </label>
+        <select name="status" class="field">
+          <option value="new">🆕 New</option>
+          <option value="in_progress">⏳ In Progress</option>
+          <option value="repaired">✅ Repaired</option>
+          <option value="scrap">🗑 Scrap</option>
+        </select>
+      </div>
+
+      <!-- SCHEDULE -->
+      <div id="scheduleBox">
+        <label class="text-sm font-semibold text-gray-700 mb-1 block">
+          Scheduled Date
+        </label>
+        {{ form.scheduled_date }}
+      </div>
+
+      <!-- ACTIONS -->
+      <div class="md:col-span-2 flex justify-end gap-4 pt-6 border-t">
+        <a href="{% url 'kanban_board' %}"
+           class="px-5 py-2 rounded-lg bg-gray-100 hover:bg-gray-200 text-sm font-medium">
+          Cancel
+        </a>
+        <button type="submit"
+                class="px-6 py-2 rounded-lg bg-indigo-600 hover:bg-indigo-700 text-white text-sm font-semibold shadow">
+          🚀 Create Request
+        </button>
+      </div>
+
+    </form>
+  </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+const equipmentSelect = document.getElementById('equipmentSelect');
+const teamDisplay = document.getElementById('teamDisplay');
+const requestType = document.querySelector('select[name="request_type"]');
+const scheduleBox = document.getElementById('scheduleBox');
+
+// Auto team display
+equipmentSelect.addEventListener('change', () => {
+  const teamName = equipmentSelect.selectedOptions[0].dataset.teamName || '';
+  teamDisplay.value = teamName ? teamName : 'Unassigned';
+});
+
+// Hide schedule date for corrective
+function toggleSchedule() {
+  if (requestType.value === 'corrective') {
+    scheduleBox.style.display = 'none';
+  } else {
+    scheduleBox.style.display = 'block';
+  }
+}
+requestType.addEventListener('change', toggleSchedule);
+toggleSchedule();
+</script>
+{% endblock %}

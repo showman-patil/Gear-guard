@@ -1,0 +1,196 @@
+{% extends 'base.html' %}
+
+{% block title %}GearGuard | Settings{% endblock %}
+
+{% block head %}
+<style>
+/* Floating label inputs (uses .field defined in base) */
+.field { padding: .75rem 1rem; border-radius: .75rem; background: #fff; border: 1px solid #e5e7eb; }
+.floating-label { position: absolute; left: 1rem; top: 1rem; color: #9ca3af; font-size: .95rem; transition: all .18s ease; pointer-events: none; }
+.input-wrap { position: relative; }
+.field:focus { box-shadow: 0 0 0 6px rgba(99,102,241,0.06); border-color: var(--accent-600); }
+.field:not(:placeholder-shown) + .floating-label, .field:focus + .floating-label { transform: translateY(-1.4rem); font-size: .75rem; color: var(--accent-600); }
+
+/* Toggle basic styling */
+.toggle { width: 48px; height: 26px; background: #d1d5db; border-radius: 9999px; position: relative; cursor: pointer; }
+.toggle input { display: none; }
+.toggle::after { content: ''; position: absolute; width: 20px; height: 20px; background: #fff; border-radius: 9999px; top: 3px; left: 3px; transition: transform .2s ease, left .2s ease; box-shadow: 0 2px 6px rgba(2,6,23,0.08); }
+.toggle[data-checked='true'] { background: var(--accent); }
+.toggle[data-checked='true']::after { transform: translateX(22px); }
+
+/* Minor responsive tweaks */
+@media (max-width: 640px) {
+  .container { padding-left: 1rem; padding-right: 1rem; }
+}
+</style>
+{% endblock %}
+
+{% block page_header %}
+  <div class="card p-4 mb-6">
+    <div class="flex items-center justify-between">
+      <div class="flex items-center gap-3">
+        <h1 class="text-lg font-bold">⚙ Settings</h1>
+        <p class="text-sm text-muted hidden sm:block">Configure account and app preferences</p>
+      </div>
+      <a href="/" class="text-sm text-gray-600 hover:text-gray-800">← Back to Dashboard</a>
+    </div>
+  </div>
+{% endblock %}
+
+{% block content %}
+<main class="container mt-4 space-y-8">
+  <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+    <!-- Account -->
+    <section class="card p-6">
+      <div class="flex items-center gap-3 mb-4">
+        <div class="text-2xl">🔐</div>
+        <h2 class="text-lg font-semibold">Account</h2>
+      </div>
+      <div class="space-y-4">
+        <div class="input-wrap">
+          <input id="username" type="text" class="field" placeholder=" " />
+          <label class="floating-label">Username</label>
+        </div>
+        <div class="input-wrap">
+          <input id="email" type="email" class="field" placeholder=" " />
+          <label class="floating-label">Email</label>
+        </div>
+        <div class="input-wrap">
+          <input id="password" type="password" class="field" placeholder=" " />
+          <label class="floating-label">New Password</label>
+        </div>
+      </div>
+    </section>
+
+    <!-- Appearance -->
+    <section class="card p-6">
+      <div class="flex items-center gap-3 mb-4">
+        <div class="text-2xl">🎨</div>
+        <h2 class="text-lg font-semibold">Appearance</h2>
+      </div>
+      <div class="space-y-3">
+        <div class="flex items-center justify-between p-3 bg-gray-50 rounded-lg">
+          <div>Dark Mode</div>
+          <div id="darkModeToggle" class="toggle" role="switch" aria-checked="false"></div>
+        </div>
+        <div class="flex items-center justify-between p-3 bg-gray-50 rounded-lg">
+          <div>Compact Mode</div>
+          <div id="compactModeToggle" class="toggle" role="switch" aria-checked="false"></div>
+        </div>
+      </div>
+    </section>
+
+    <!-- Notifications -->
+    <section class="card p-6">
+      <div class="flex items-center gap-3 mb-4">
+        <div class="text-2xl">🔔</div>
+        <h2 class="text-lg font-semibold">Notifications</h2>
+      </div>
+      <div class="space-y-3">
+        <div class="flex items-center justify-between p-3 bg-gray-50 rounded-lg">
+          <div>Email Notifications</div>
+          <input type="checkbox" id="emailNotify" class="field hidden" />
+          <div id="emailNotifyToggle" class="toggle" role="switch" aria-checked="false"></div>
+        </div>
+        <div class="flex items-center justify-between p-3 bg-gray-50 rounded-lg">
+          <div>Push Notifications</div>
+          <input type="checkbox" id="pushNotify" class="field hidden" />
+          <div id="pushNotifyToggle" class="toggle" role="switch" aria-checked="false"></div>
+        </div>
+        <div class="flex items-center justify-between p-3 bg-gray-50 rounded-lg">
+          <div>Maintenance Alerts</div>
+          <input type="checkbox" id="maintenanceNotify" class="field hidden" />
+          <div id="maintenanceNotifyToggle" class="toggle" role="switch" aria-checked="false"></div>
+        </div>
+      </div>
+    </section>
+
+    <!-- System -->
+    <section class="card p-6">
+      <div class="flex items-center gap-3 mb-4">
+        <div class="text-2xl">🛠</div>
+        <h2 class="text-lg font-semibold">System Preferences</h2>
+      </div>
+      <div class="space-y-3">
+        <div class="flex items-center justify-between p-3 bg-gray-50 rounded-lg">
+          <div>Auto-Assign Technician</div>
+          <input type="checkbox" id="autoAssign" class="field hidden" />
+          <div id="autoAssignToggle" class="toggle" role="switch" aria-checked="false"></div>
+        </div>
+        <div class="flex items-center justify-between p-3 bg-gray-50 rounded-lg">
+          <div>Confirm Before Scrap</div>
+          <input type="checkbox" id="confirmScrap" class="field hidden" />
+          <div id="confirmScrapToggle" class="toggle" role="switch" aria-checked="false"></div>
+        </div>
+      </div>
+    </section>
+  </div>
+
+  <div class="flex justify-end">
+    <button onclick="saveSettings()" class="px-6 py-3 bg-gradient-to-r from-indigo-600 to-cyan-600 text-white rounded-lg shadow">💾 Save Settings</button>
+  </div>
+</main>
+{% endblock %}
+
+{% block scripts %}
+<script>
+// Read settings from localStorage
+const settings = JSON.parse(localStorage.getItem('settings') || '{}');
+
+function applyToggle(el, checked) {
+  if(!el) return;
+  el.setAttribute('data-checked', checked? 'true' : 'false');
+  el.setAttribute('aria-checked', checked? 'true' : 'false');
+}
+
+function loadSettings() {
+  if(settings.username) document.getElementById('username').value = settings.username;
+  if(settings.email) document.getElementById('email').value = settings.email;
+
+  // Map boolean toggles
+  applyToggle(document.getElementById('darkModeToggle'), !!settings.darkMode);
+  applyToggle(document.getElementById('compactModeToggle'), !!settings.compactMode);
+  applyToggle(document.getElementById('emailNotifyToggle'), !!settings.emailNotify);
+  applyToggle(document.getElementById('pushNotifyToggle'), !!settings.pushNotify);
+  applyToggle(document.getElementById('maintenanceNotifyToggle'), !!settings.maintenanceNotify);
+  applyToggle(document.getElementById('autoAssignToggle'), !!settings.autoAssign);
+  applyToggle(document.getElementById('confirmScrapToggle'), !!settings.confirmScrap);
+
+  if(settings.darkMode) document.documentElement.classList.add('dark');
+  if(settings.compactMode) document.querySelector('main')?.classList.add('compact-mode');
+}
+
+function toggleSetting(key, value) {
+  settings[key] = value;
+  localStorage.setItem('settings', JSON.stringify(settings));
+}
+
+// Wire toggles
+['darkMode','compactMode','emailNotify','pushNotify','maintenanceNotify','autoAssign','confirmScrap'].forEach(key => {
+  const btn = document.getElementById(key + 'Toggle');
+  if(!btn) return;
+  btn.addEventListener('click', ()=>{
+    const checked = btn.getAttribute('data-checked') === 'true' ? false : true;
+    applyToggle(btn, checked);
+    toggleSetting(key, checked);
+    if(key === 'darkMode') document.documentElement.classList.toggle('dark', checked);
+    if(key === 'compactMode') document.querySelector('main')?.classList.toggle('compact-mode', checked);
+  });
+});
+
+function saveSettings() {
+  settings.username = document.getElementById('username').value;
+  settings.email = document.getElementById('email').value;
+  // Persist toggles already saved by toggleSetting
+  localStorage.setItem('settings', JSON.stringify(settings));
+  const btn = document.createElement('div');
+  btn.className = 'fixed bottom-6 right-6 bg-green-500 text-white px-4 py-2 rounded shadow';
+  btn.innerText = 'Settings saved';
+  document.body.appendChild(btn);
+  setTimeout(()=>btn.remove(),1500);
+}
+
+// initial
+loadSettings();
+</script>
+{% endblock %}

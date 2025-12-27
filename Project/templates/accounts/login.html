@@ -1,0 +1,178 @@
+<!DOCTYPE html>
+<html lang="en" class="dark">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+
+  <!-- Tailwind -->
+  <script src="https://cdn.tailwindcss.com"></script>
+
+  <!-- Icons -->
+  <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css" rel="stylesheet">
+
+  <title>Login — GearGuard</title>
+
+  <script>
+    tailwind.config = {
+      darkMode: 'class'
+    }
+  </script>
+</head>
+
+<body class="min-h-screen bg-slate-100 dark:bg-slate-950 text-slate-900 dark:text-white flex overflow-hidden transition-colors duration-300">
+
+  <!-- LEFT PANEL -->
+  <aside class="hidden lg:flex w-1/2 relative items-center justify-center overflow-hidden">
+
+    <div class="absolute -top-24 -left-16 w-[26rem] h-[26rem] bg-indigo-600/25 blur-3xl rounded-full animate-float"></div>
+    <div class="absolute bottom-0 right-0 w-[30rem] h-[30rem] bg-cyan-500/20 blur-3xl rounded-full animate-float delay-1000"></div>
+
+    <div class="relative z-10 max-w-xl px-14">
+      <span class="px-4 py-1 bg-black/5 dark:bg-white/5 border border-black/10 dark:border-white/10 rounded-full text-sm">
+        🚀 GearGuard Maintenance Suite
+      </span>
+
+      <h1 class="mt-6 text-4xl font-extrabold leading-tight">
+        Maintain smarter.
+        <span class="text-indigo-500 dark:text-indigo-400">Reduce downtime.</span>
+      </h1>
+
+      <p class="mt-4 text-slate-600 dark:text-gray-300 leading-relaxed text-sm">
+        Track equipment, assign maintenance teams, schedule preventive tasks, and monitor performance — all in one intuitive dashboard.
+      </p>
+
+      <div class="mt-8 grid grid-cols-2 gap-4 text-sm text-slate-600 dark:text-gray-300">
+        <div class="flex items-center gap-2">
+          <i class="fa-solid fa-lock text-indigo-500 dark:text-indigo-400"></i> Secure Access
+        </div>
+        <div class="flex items-center gap-2">
+          <i class="fa-solid fa-screwdriver-wrench text-indigo-500 dark:text-indigo-400"></i> Maintenance Control
+        </div>
+        <div class="flex items-center gap-2">
+          <i class="fa-solid fa-chart-line text-indigo-500 dark:text-indigo-400"></i> Insights & Reports
+        </div>
+        <div class="flex items-center gap-2">
+          <i class="fa-solid fa-calendar-days text-indigo-500 dark:text-indigo-400"></i> Scheduled Tasks
+        </div>
+      </div>
+    </div>
+
+  </aside>
+
+  <!-- RIGHT PANEL -->
+  <main class="flex w-full lg:w-1/2 items-center justify-center px-6 sm:px-10">
+
+    <div class="w-full max-w-md rounded-3xl
+      bg-white/80 dark:bg-white/10
+      backdrop-blur-2xl
+      border border-black/10 dark:border-white/20
+      shadow-2xl p-8 animate-fade">
+
+      <!-- Theme Toggle -->
+      <div class="flex justify-end mb-3">
+        <button id="themeToggle"
+          class="rounded-full px-3 py-1 text-sm
+          bg-black/5 dark:bg-white/10
+          border border-black/10 dark:border-white/20">
+          🌙
+        </button>
+      </div>
+
+      <!-- logo -->
+      <div class="mx-auto w-16 h-16 bg-gradient-to-br from-indigo-500/30 to-cyan-500/30 rounded-2xl flex items-center justify-center mb-4 shadow">
+        <i class="fa-solid fa-shield text-indigo-500 dark:text-indigo-300 text-xl"></i>
+      </div>
+
+      <h2 class="text-2xl font-bold text-center">Welcome back</h2>
+      <p class="text-center text-slate-500 dark:text-gray-400 text-sm mt-1">
+        Log in to continue to GearGuard
+      </p>
+
+      {% if messages %}
+      <div class="mt-3 space-y-2">
+        {% for message in messages %}
+        <div class="rounded-lg px-4 py-2 text-sm border
+          {% if message.tags == 'error' %}
+            bg-red-600/80 border-red-400 text-white
+          {% else %}
+            bg-green-600/80 border-green-400 text-white
+          {% endif %}">
+          {{ message }}
+        </div>
+        {% endfor %}
+      </div>
+      {% endif %}
+
+      <form method="POST" class="mt-6 space-y-5" novalidate>
+        {% csrf_token %}
+
+        <div>
+          <label class="text-sm text-slate-600 dark:text-gray-300">Username</label>
+          <input name="username" required
+            class="w-full mt-1 px-4 py-2.5 rounded-xl
+            bg-black/5 dark:bg-white/10
+            border border-black/20 dark:border-white/30
+            focus:ring-2 focus:ring-indigo-500">
+        </div>
+
+        <div>
+          <label class="text-sm text-slate-600 dark:text-gray-300">Password</label>
+          <input type="password" name="password" required
+            class="w-full mt-1 px-4 py-2.5 rounded-xl
+            bg-black/5 dark:bg-white/10
+            border border-black/20 dark:border-white/30
+            focus:ring-2 focus:ring-indigo-500">
+        </div>
+
+        <button class="w-full py-3 bg-gradient-to-r from-indigo-600 to-cyan-600 rounded-xl text-white font-semibold shadow-xl">
+          Sign in
+        </button>
+
+        <p class="text-center text-sm text-slate-500 dark:text-gray-400">
+          Don’t have an account?
+          <a href="{% url 'signup' %}" class="text-indigo-500 dark:text-indigo-300 underline">
+            Create one
+          </a>
+        </p>
+      </form>
+    </div>
+  </main>
+
+  <!-- Animations -->
+  <style>
+    @keyframes float {
+      0%, 100% { transform: translateY(0); }
+      50% { transform: translateY(-18px); }
+    }
+    .animate-float {
+      animation: float 7s ease-in-out infinite;
+    }
+    @keyframes fade {
+      from { opacity: 0; transform: translateY(10px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+    .animate-fade {
+      animation: fade .6s ease-out;
+    }
+  </style>
+
+  <!-- Theme Toggle JS -->
+  <script>
+    const html = document.documentElement;
+    const toggle = document.getElementById("themeToggle");
+
+    if (localStorage.theme === "light") {
+      html.classList.remove("dark");
+      toggle.textContent = "🌙";
+    }
+
+    toggle.onclick = () => {
+      html.classList.toggle("dark");
+      const isDark = html.classList.contains("dark");
+      localStorage.theme = isDark ? "dark" : "light";
+      toggle.textContent = isDark ? "☀️" : "🌙";
+    };
+  </script>
+
+</body>
+</html>

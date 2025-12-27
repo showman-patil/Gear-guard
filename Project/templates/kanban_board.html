@@ -1,0 +1,14 @@
+{% extends 'base.html' %}
+
+{% block title %}Maintenance Kanban — GearGuard{% endblock %}
+
+{% block content %}
+  <div class="max-w-3xl mx-auto text-center py-12">
+    <h1 class="text-3xl font-bold">Maintenance Kanban</h1>
+    <p class="text-sm text-gray-500 mt-2">This route has moved — use the updated interactive Kanban.</p>
+    <div class="mt-6">
+      <a href="{% url 'kanban_board' %}" class="px-4 py-2 rounded-md bg-indigo-600 text-white">Open Kanban</a>
+      <a href="/" class="ml-3 px-4 py-2 rounded-md bg-gray-100">Go to Dashboard</a>
+    </div>
+  </div>
+{% endblock %}
