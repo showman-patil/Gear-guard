@@ -411,11 +411,65 @@
     }
   }
 
-  // Wire refresh button
-  document.getElementById('refreshChart').addEventListener('click', fetchAndUpdateChart);
+  // Fetch additional dashboard metrics (KPIs, overdue lists, teams)
+  async function fetchDashboardData() {
+    try {
+      const res = await fetch('/maintenance/api/dashboard/', {credentials: 'same-origin'});
+      if (!res.ok) throw new Error('API error');
+      const d = await res.json();
 
-  // Initial load with animation delay
-  setTimeout(fetchAndUpdateChart, 300);
+      // KPIs
+      kpi('kpi-equipment', d.equipment);
+      kpi('kpi-requests', d.requests);
+      kpi('kpi-progress', d.inProgress);
+      kpi('kpi-overdue', d.overdue);
+      kpi('kpi-scrap', d.scrap);
+
+      // Overdue table
+      const overdueTable = document.getElementById('overdueTable');
+      if (d.overdueList && d.overdueList.length > 0) {
+        overdueTable.innerHTML = d.overdueList.map(i => `
+          <tr class="hover:bg-gray-50 transition-colors duration-200">
+            <td class="p-3 font-medium text-gray-900">${i.eq}</td>
+            <td class="p-3 text-gray-700">${i.tech || '-'}</td>
+            <td class="p-3 text-red-600 font-semibold">${new Date(i.date).toLocaleDateString()}</td>
+          </tr>`).join('');
+        document.getElementById('noOverdue').classList.add('hidden');
+      } else {
+        document.getElementById('noOverdue').classList.remove('hidden');
+        overdueTable.innerHTML = '';
+      }
+
+      // Upcoming
+      document.getElementById('upcomingList').innerHTML = (d.upcoming || []).map(i => `
+        <li class="py-3 px-0 flex items-center gap-3">
+          <div class="flex-shrink-0 w-2 h-2 bg-green-500 rounded-full"></div>
+          <span class="text-gray-900 font-medium">${i.eq}</span>
+          <span class="text-gray-500 ml-auto">${new Date(i.date).toLocaleDateString()}</span>
+        </li>`).join('');
+
+      // Teams
+      const workload = document.getElementById('teamWorkload');
+      workload.innerHTML = Object.entries(d.teams || {}).map(([t, info]) => `
+        <div class="text-center p-4 bg-gradient-to-b from-white to-gray-50 rounded-xl border border-gray-200 hover:shadow-glow transition-all duration-300">
+          <i class="fas fa-users-cog text-indigo-500 text-3xl mb-2"></i>
+          <p class="text-gray-500 font-medium">${t}</p>
+          <h4 class="text-2xl font-bold text-gray-900">${info.count} Tasks</h4>
+          <div class="w-full bg-gray-200 rounded-full h-2 mt-2">
+            <div class="bg-indigo-500 h-2 rounded-full" style="width: ${Math.min(100, (info.count / Math.max(1, d.requests)) * 100)}%"></div>
+          </div>
+        </div>`).join('');
+
+    } catch (err) {
+      console.warn('Dashboard API failed, using sample data', err);
+    }
+  }
+
+  // Wire refresh button to update chart and dashboard metrics
+  document.getElementById('refreshChart').addEventListener('click', ()=>{ fetchAndUpdateChart(); fetchDashboardData(); });
+
+  // Initial load with animation delay (chart + KPIs)
+  setTimeout(()=>{ fetchAndUpdateChart(); fetchDashboardData(); }, 300);
 
   // Responsive chart resize
   window.addEventListener('resize', () => {

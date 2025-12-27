@@ -103,3 +103,47 @@ def update_request_status(request, pk):
         eq.save()
 
     return Response(MaintenanceRequestSerializer(req).data)
+
+# Dashboard data endpoint
+from django.http import JsonResponse
+from django.utils import timezone
+from django.db.models import Count
+from teams.models import MaintenanceTeam
+
+def dashboard_data(request):
+    """Return dashboard metrics and small lists as JSON."""
+    today = timezone.localdate()
+
+    total_equipment = Equipment.objects.count()
+    requests = MaintenanceRequest.objects.all()
+
+    overdue_qs = MaintenanceRequest.objects.filter(scheduled_date__lt=today).exclude(status__in=['repaired','scrap']).select_related('equipment','assigned_to')[:10]
+    overdue_list = [
+        { 'eq': str(r.equipment), 'tech': (r.assigned_to.username if r.assigned_to else None), 'date': (r.scheduled_date.isoformat() if r.scheduled_date else None) }
+        for r in overdue_qs
+    ]
+
+    upcoming_qs = MaintenanceRequest.objects.filter(scheduled_date__gte=today).order_by('scheduled_date').select_related('equipment')[:10]
+    upcoming_list = [ {'eq': str(r.equipment), 'date': (r.scheduled_date.isoformat() if r.scheduled_date else None)} for r in upcoming_qs ]
+
+    team_counts = MaintenanceRequest.objects.values('team__name').annotate(count=Count('id')).order_by('-count')
+    teams = { t['team__name'] or 'Unassigned': {'count': t['count']} for t in team_counts }
+
+    data = {
+        "equipment": total_equipment,
+        "requests": requests.count(),
+        "inProgress": requests.filter(status="in_progress").count(),
+        "overdue": overdue_qs.count(),
+        "scrap": Equipment.objects.filter(status="scrap").count(),
+        "status": {
+            "new": requests.filter(status="new").count(),
+            "in_progress": requests.filter(status="in_progress").count(),
+            "repaired": requests.filter(status="repaired").count(),
+            "scrap": requests.filter(status="scrap").count(),
+        },
+        'overdueList': overdue_list,
+        'upcoming': upcoming_list,
+        'teams': teams
+    }
+
+    return JsonResponse(data)
