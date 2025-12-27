@@ -12,6 +12,9 @@ from rest_framework.response import Response
 from rest_framework import status
 from .serializers import MaintenanceRequestSerializer
 
+# Add Notification import
+from accounts.models import Notification
+
 def maintenance_create(request):
     if request.method == 'POST':
         form = MaintenanceRequestForm(request.POST)
@@ -109,7 +112,9 @@ from django.http import JsonResponse
 from django.utils import timezone
 from django.db.models import Count
 from teams.models import MaintenanceTeam
+from django.contrib.auth.decorators import login_required
 
+@login_required
 def dashboard_data(request):
     """Return dashboard metrics and small lists as JSON."""
     today = timezone.localdate()
@@ -129,6 +134,9 @@ def dashboard_data(request):
     team_counts = MaintenanceRequest.objects.values('team__name').annotate(count=Count('id')).order_by('-count')
     teams = { t['team__name'] or 'Unassigned': {'count': t['count']} for t in team_counts }
 
+    # Generate notifications for overdue items
+    _generate_overdue_notifications(request.user, overdue_qs)
+
     data = {
         "equipment": total_equipment,
         "requests": requests.count(),
@@ -147,3 +155,50 @@ def dashboard_data(request):
     }
 
     return JsonResponse(data)
+
+def _generate_overdue_notifications(user, overdue_requests):
+    """Generate notifications for overdue maintenance requests"""
+    for req in overdue_requests:
+        # Check if notification already exists
+        exists = Notification.objects.filter(
+            user=user,
+            notification_type='overdue',
+            related_object_id=req.id,
+            related_model='MaintenanceRequest'
+        ).exists()
+        if not exists:
+            Notification.objects.create(
+                user=user,
+                title=f"Overdue Maintenance: {req.equipment}",
+                message=f"Maintenance request for {req.equipment} is overdue. Scheduled date: {req.scheduled_date}",
+                notification_type='overdue',
+                related_object_id=req.id,
+                related_model='MaintenanceRequest'
+            )
+
+@api_view(['GET'])
+@permission_classes([IsAuthenticated])
+def notifications_api(request):
+    """Return user notifications"""
+    user = request.user
+    notifications = Notification.objects.filter(user=user).order_by('-created_at')[:20]
+    data = [{
+        'id': n.id,
+        'title': n.title,
+        'message': n.message,
+        'type': n.notification_type,
+        'is_read': n.is_read,
+        'created_at': n.created_at.isoformat(),
+        'related_object_id': n.related_object_id,
+        'related_model': n.related_model,
+    } for n in notifications]
+    return Response(data)
+
+@api_view(['POST'])
+@permission_classes([IsAuthenticated])
+def mark_notification_read(request, pk):
+    """Mark a notification as read"""
+    notification = get_object_or_404(Notification, pk=pk, user=request.user)
+    notification.is_read = True
+    notification.save()
+    return Response({'status': 'ok'})

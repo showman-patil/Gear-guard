@@ -107,9 +107,29 @@
         <a href="{% url 'equipment_add' %}" class="hidden md:inline-flex items-center gap-2 px-3 py-2 btn-primary rounded-md text-sm shadow text-white">+ Equipment</a>
         <a href="{% url 'maintenance_add' %}" class="hidden md:inline-flex items-center gap-2 px-3 py-2 btn-success rounded-md text-sm shadow text-white">+ Request</a>
 
-        <button id="notifBtn" class="p-2 rounded-full bg-white border shadow-sm text-gray-700" aria-label="Notifications">
-          <i class="fa-solid fa-bell"></i>
-        </button>
+        <div class="relative">
+          <button id="notifBtn" class="p-2 rounded-full bg-white border shadow-sm text-gray-700 relative" aria-label="Notifications">
+            <i class="fa-solid fa-bell"></i>
+            <span id="notifBadge" class="absolute -top-1 -right-1 bg-red-500 text-white text-xs rounded-full h-5 w-5 flex items-center justify-center hidden">0</span>
+          </button>
+
+          <!-- Notifications Dropdown -->
+          <div id="notifDropdown" class="hidden absolute right-0 mt-2 w-80 bg-white rounded-md shadow-lg z-50 max-h-96 overflow-y-auto">
+            <div class="py-2">
+              <div class="px-4 py-2 border-b border-gray-200 flex items-center justify-between">
+                <h3 class="text-sm font-medium text-gray-900">Notifications</h3>
+                <button id="markAllReadBtn" class="text-xs text-blue-600 hover:text-blue-800 hidden">Mark all read</button>
+              </div>
+              <div id="notifList" class="divide-y divide-gray-200">
+                <!-- Notifications will be loaded here -->
+                <div class="px-4 py-8 text-center text-gray-500">
+                  <i class="fa-solid fa-bell-slash text-2xl mb-2"></i>
+                  <p class="text-sm">No notifications</p>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
 
         <div class="hidden md:block">
           {% if user.is_authenticated %}
@@ -199,6 +219,143 @@
             if (!inside) userDropdown.classList.add('hidden');
           }
         });
+      }
+
+      // Notifications dropdown
+      const notifBtn = document.getElementById('notifBtn');
+      const notifDropdown = document.getElementById('notifDropdown');
+      const notifBadge = document.getElementById('notifBadge');
+      const notifList = document.getElementById('notifList');
+      const markAllReadBtn = document.getElementById('markAllReadBtn');
+
+      if (notifBtn && notifDropdown) {
+        notifBtn.addEventListener('click', (e) => {
+          e.stopPropagation();
+          notifDropdown.classList.toggle('hidden');
+          if (!notifDropdown.classList.contains('hidden')) {
+            loadNotifications();
+          }
+        });
+
+        // Close notifications dropdown when clicking outside
+        document.addEventListener('click', (ev) => {
+          if (!notifDropdown.classList.contains('hidden')) {
+            const inside = notifDropdown.contains(ev.target) || notifBtn.contains(ev.target);
+            if (!inside) notifDropdown.classList.add('hidden');
+          }
+        });
+      }
+
+      // Load notifications
+      async function loadNotifications() {
+        try {
+          const response = await fetch('/accounts/api/notifications/', {
+            credentials: 'same-origin'
+          });
+          if (!response.ok) throw new Error('Failed to load notifications');
+          
+          const notifications = await response.json();
+          renderNotifications(notifications);
+        } catch (error) {
+          console.error('Error loading notifications:', error);
+          notifList.innerHTML = `
+            <div class="px-4 py-8 text-center text-gray-500">
+              <i class="fa-solid fa-exclamation-triangle text-2xl mb-2"></i>
+              <p class="text-sm">Failed to load notifications</p>
+            </div>
+          `;
+        }
+      }
+
+      function renderNotifications(notifications) {
+        const unreadCount = notifications.filter(n => !n.is_read).length;
+        
+        // Update badge
+        if (unreadCount > 0) {
+          notifBadge.textContent = unreadCount > 99 ? '99+' : unreadCount;
+          notifBadge.classList.remove('hidden');
+          markAllReadBtn.classList.remove('hidden');
+        } else {
+          notifBadge.classList.add('hidden');
+          markAllReadBtn.classList.add('hidden');
+        }
+
+        if (notifications.length === 0) {
+          notifList.innerHTML = `
+            <div class="px-4 py-8 text-center text-gray-500">
+              <i class="fa-solid fa-bell-slash text-2xl mb-2"></i>
+              <p class="text-sm">No notifications</p>
+            </div>
+          `;
+          return;
+        }
+
+        notifList.innerHTML = notifications.map(notification => `
+          <div class="px-4 py-3 hover:bg-gray-50 cursor-pointer ${!notification.is_read ? 'bg-blue-50 border-l-4 border-l-blue-500' : ''}" onclick="markAsRead(${notification.id})">
+            <div class="flex items-start justify-between">
+              <div class="flex-1">
+                <h4 class="text-sm font-medium text-gray-900 ${!notification.is_read ? 'text-blue-900' : ''}">${notification.title}</h4>
+                <p class="text-sm text-gray-600 mt-1">${notification.message}</p>
+                <p class="text-xs text-gray-500 mt-2">${new Date(notification.created_at).toLocaleString()}</p>
+              </div>
+              ${!notification.is_read ? '<span class="text-blue-500 text-xs">●</span>' : ''}
+            </div>
+          </div>
+        `).join('');
+      }
+
+      // Mark notification as read
+      window.markAsRead = async function(id) {
+        try {
+          const response = await fetch(`/accounts/api/notifications/${id}/read/`, {
+            method: 'POST',
+            credentials: 'same-origin',
+            headers: {
+              'X-CSRFToken': getCookie('csrftoken')
+            }
+          });
+          if (response.ok) {
+            loadNotifications(); // Refresh
+          }
+        } catch (error) {
+          console.error('Error marking as read:', error);
+        }
+      };
+
+      // Mark all as read
+      if (markAllReadBtn) {
+        markAllReadBtn.addEventListener('click', async () => {
+          try {
+            const response = await fetch('/accounts/api/notifications/mark_all_read/', {
+              method: 'POST',
+              credentials: 'same-origin',
+              headers: {
+                'X-CSRFToken': getCookie('csrftoken')
+              }
+            });
+            if (response.ok) {
+              loadNotifications();
+            }
+          } catch (error) {
+            console.error('Error marking all as read:', error);
+          }
+        });
+      }
+
+      // Helper function to get CSRF token
+      function getCookie(name) {
+        let cookieValue = null;
+        if (document.cookie && document.cookie !== '') {
+          const cookies = document.cookie.split(';');
+          for (let i = 0; i < cookies.length; i++) {
+            const cookie = cookies[i].trim();
+            if (cookie.substring(0, name.length + 1) === (name + '=')) {
+              cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
+              break;
+            }
+          }
+        }
+        return cookieValue;
       }
 
       // Close mobile menu when clicking outside or resizing

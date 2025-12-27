@@ -145,3 +145,72 @@ def settings_view(request):
     current_theme = request.session.get('theme', 'auto')
     # Render the existing project-level settings template (templates/setting.html)
     return render(request, 'setting.html', {'current_theme': current_theme})
+
+
+# Settings API (GET to fetch prefs, POST to update)
+from django.http import JsonResponse
+from django.views.decorators.http import require_http_methods
+from .models import UserSettings
+
+@login_required
+@require_http_methods(['GET','POST'])
+def settings_api(request):
+    user = request.user
+    # ensure settings object exists
+    obj, created = UserSettings.objects.get_or_create(user=user)
+    if request.method == 'GET':
+        return JsonResponse({'preferences': obj.preferences})
+
+    # POST - update prefs (expect JSON body)
+    try:
+        payload = json.loads(request.body.decode('utf-8'))
+    except Exception:
+        return JsonResponse({'error': 'Invalid JSON'}, status=400)
+
+    # merge incoming keys into preferences
+    prefs = obj.preferences or {}
+    incoming = payload.get('preferences', payload)
+    if not isinstance(incoming, dict):
+        return JsonResponse({'error': 'preferences must be an object'}, status=400)
+    prefs.update(incoming)
+    obj.preferences = prefs
+    obj.save()
+    return JsonResponse({'ok': True, 'preferences': obj.preferences})
+
+# Notification APIs
+from .models import Notification
+import json
+from django.utils import timezone
+
+@login_required
+def notifications_api(request):
+    notifications = Notification.objects.filter(user=request.user).order_by('-created_at')[:20]
+    data = [{
+        'id': n.id,
+        'title': n.title,
+        'message': n.message,
+        'notification_type': n.notification_type,
+        'is_read': n.is_read,
+        'created_at': n.created_at.isoformat(),
+        'related_object_id': n.related_object_id,
+        'related_model': n.related_model,
+    } for n in notifications]
+    return JsonResponse(data, safe=False)
+
+@login_required
+@require_http_methods(['POST'])
+def mark_notification_read(request, notification_id):
+    try:
+        notification = Notification.objects.get(id=notification_id, user=request.user)
+        notification.is_read = True
+        notification.save()
+        return JsonResponse({'ok': True})
+    except Notification.DoesNotExist:
+        return JsonResponse({'error': 'Notification not found'}, status=404)
+
+@login_required
+@require_http_methods(['POST'])
+def mark_all_notifications_read(request):
+    Notification.objects.filter(user=request.user, is_read=False).update(is_read=True)
+    return JsonResponse({'ok': True})
+

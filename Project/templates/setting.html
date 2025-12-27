@@ -139,8 +139,13 @@
 
 {% block scripts %}
 <script>
-// Read settings from localStorage
-const settings = JSON.parse(localStorage.getItem('settings') || '{}');
+// Settings state (server-backed). Keep localStorage as fallback
+let settings = {};
+
+function getCookie(name) {
+  const v = document.cookie.match('(^|;)\\s*' + name + '\\s*=\\s*([^;]+)');
+  return v ? v.pop() : '';
+}
 
 function applyToggle(el, checked) {
   if(!el) return;
@@ -148,16 +153,48 @@ function applyToggle(el, checked) {
   el.setAttribute('aria-checked', checked? 'true' : 'false');
 }
 
-function loadSettings() {
-  if(settings.username) document.getElementById('username').value = settings.username;
-  if(settings.email) document.getElementById('email').value = settings.email;
+async function loadSettings(){
+  // get server prefs and profile in parallel
+  try{
+    const [prefsRes, profileRes] = await Promise.all([
+      fetch('{% url "settings_api" %}'),
+      fetch('{% url "profile_api" %}')
+    ]);
 
-  // Map boolean toggles
-  applyToggle(document.getElementById('emailNotifyToggle'), !!settings.emailNotify);
-  applyToggle(document.getElementById('pushNotifyToggle'), !!settings.pushNotify);
-  applyToggle(document.getElementById('maintenanceNotifyToggle'), !!settings.maintenanceNotify);
-  applyToggle(document.getElementById('autoAssignToggle'), !!settings.autoAssign);
-  applyToggle(document.getElementById('confirmScrapToggle'), !!settings.confirmScrap);
+    if(prefsRes.ok){
+      const prefsData = await prefsRes.json();
+      settings = prefsData.preferences || {};
+    } else {
+      settings = JSON.parse(localStorage.getItem('settings') || '{}');
+    }
+
+    if(profileRes.ok){
+      const profile = await profileRes.json();
+      if(profile.email) document.getElementById('email').value = profile.email;
+      if(profile.username) document.getElementById('username').value = profile.username;
+    } else {
+      if(settings.username) document.getElementById('username').value = settings.username;
+      if(settings.email) document.getElementById('email').value = settings.email;
+    }
+
+    // Map boolean toggles from settings
+    applyToggle(document.getElementById('emailNotifyToggle'), !!settings.emailNotify);
+    applyToggle(document.getElementById('pushNotifyToggle'), !!settings.pushNotify);
+    applyToggle(document.getElementById('maintenanceNotifyToggle'), !!settings.maintenanceNotify);
+    applyToggle(document.getElementById('autoAssignToggle'), !!settings.autoAssign);
+    applyToggle(document.getElementById('confirmScrapToggle'), !!settings.confirmScrap);
+
+  } catch(err){
+    // fallback
+    settings = JSON.parse(localStorage.getItem('settings') || '{}');
+    if(settings.username) document.getElementById('username').value = settings.username;
+    if(settings.email) document.getElementById('email').value = settings.email;
+    applyToggle(document.getElementById('emailNotifyToggle'), !!settings.emailNotify);
+    applyToggle(document.getElementById('pushNotifyToggle'), !!settings.pushNotify);
+    applyToggle(document.getElementById('maintenanceNotifyToggle'), !!settings.maintenanceNotify);
+    applyToggle(document.getElementById('autoAssignToggle'), !!settings.autoAssign);
+    applyToggle(document.getElementById('confirmScrapToggle'), !!settings.confirmScrap);
+  }
 }
 
 function toggleSetting(key, value) {
@@ -176,16 +213,62 @@ function toggleSetting(key, value) {
   });
 });
 
-function saveSettings() {
-  settings.username = document.getElementById('username').value;
-  settings.email = document.getElementById('email').value;
-  // Persist toggles already saved by toggleSetting
-  localStorage.setItem('settings', JSON.stringify(settings));
-  const btn = document.createElement('div');
-  btn.className = 'fixed bottom-6 right-6 bg-green-500 text-white px-4 py-2 rounded shadow';
-  btn.innerText = 'Settings saved';
-  document.body.appendChild(btn);
-  setTimeout(()=>btn.remove(),1500);
+async function saveSettings() {
+  // update profile email via profile API
+  const email = document.getElementById('email').value;
+  const username = document.getElementById('username').value;
+
+  // Prepare preferences payload
+  const prefs = {
+    emailNotify: settings.emailNotify || false,
+    pushNotify: settings.pushNotify || false,
+    maintenanceNotify: settings.maintenanceNotify || false,
+    autoAssign: settings.autoAssign || false,
+    confirmScrap: settings.confirmScrap || false
+  };
+
+  // POST preferences to settings API
+  try{
+    const res = await fetch('{% url "settings_api" %}', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json', 'X-CSRFToken': getCookie('csrftoken') },
+      body: JSON.stringify({ preferences: prefs })
+    });
+    if(res.ok){
+      const data = await res.json();
+      settings = data.preferences || settings;
+    } else {
+      console.error('Failed to save settings');
+    }
+
+    // update email (profile API)
+    const profileRes = await fetch('{% url "profile_api" %}', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json', 'X-CSRFToken': getCookie('csrftoken') },
+      body: JSON.stringify({ email })
+    });
+
+    const flash = document.createElement('div');
+    if(res.ok && profileRes.ok){
+      flash.className = 'fixed bottom-6 right-6 bg-green-500 text-white px-4 py-2 rounded shadow';
+      flash.innerText = 'Settings saved';
+    } else {
+      flash.className = 'fixed bottom-6 right-6 bg-red-500 text-white px-4 py-2 rounded shadow';
+      flash.innerText = 'Save failed';
+    }
+    document.body.appendChild(flash);
+    setTimeout(()=>flash.remove(),1500);
+
+    // keep local copy
+    localStorage.setItem('settings', JSON.stringify(settings));
+
+  } catch(err){
+    const btn = document.createElement('div');
+    btn.className = 'fixed bottom-6 right-6 bg-red-500 text-white px-4 py-2 rounded shadow';
+    btn.innerText = 'Save failed';
+    document.body.appendChild(btn);
+    setTimeout(()=>btn.remove(),1500);
+  }
 }
 
 // initial
