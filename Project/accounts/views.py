@@ -88,6 +88,50 @@ def profile_view(request):
     return render(request, 'accounts/profile.html', context)
 
 
+# Simple API for profile to support AJAX updates and dynamic refresh
+from django.http import JsonResponse
+import json
+
+@login_required
+def profile_api(request):
+    user = request.user
+    if request.method == 'GET':
+        teams_qs = getattr(user, 'maintenance_teams', None)
+        teams = [t.name for t in teams_qs.all()] if teams_qs is not None else []
+        assigned_open = list(MaintenanceRequest.objects.filter(assigned_to=user, status__in=['new', 'in_progress']).values('id','title','status','created_at'))
+        assigned_closed = list(MaintenanceRequest.objects.filter(assigned_to=user).exclude(status__in=['new', 'in_progress']).values('id','title','status','created_at'))
+        data = {
+            'username': user.username,
+            'first_name': user.first_name,
+            'last_name': user.last_name,
+            'email': user.email,
+            'date_joined': user.date_joined.isoformat(),
+            'teams': teams,
+            'assigned_open': assigned_open,
+            'assigned_closed': assigned_closed,
+        }
+        return JsonResponse(data)
+
+    if request.method == 'POST':
+        try:
+            payload = json.loads(request.body.decode('utf-8'))
+        except Exception:
+            return JsonResponse({'error': 'Invalid JSON'}, status=400)
+        changed = False
+        if 'first_name' in payload:
+            user.first_name = payload.get('first_name') or ''
+            changed = True
+        if 'last_name' in payload:
+            user.last_name = payload.get('last_name') or ''
+            changed = True
+        if 'email' in payload:
+            user.email = payload.get('email') or ''
+            changed = True
+        if changed:
+            user.save()
+        return JsonResponse({'ok': True, 'first_name': user.first_name, 'last_name': user.last_name, 'email': user.email})
+
+
 @login_required
 def settings_view(request):
     # simple settings page - expand later with persistent user prefs
