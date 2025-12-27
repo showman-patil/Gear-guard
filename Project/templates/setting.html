@@ -8,7 +8,7 @@
 .field { padding: .75rem 1rem; border-radius: .75rem; background: #fff; border: 1px solid #e5e7eb; }
 .floating-label { position: absolute; left: 1rem; top: 1rem; color: #9ca3af; font-size: .95rem; transition: all .18s ease; pointer-events: none; }
 .input-wrap { position: relative; }
-.field:focus { box-shadow: 0 0 0 6px rgba(99,102,241,0.06); border-color: var(--accent-600); }
+.field:focus { box-shadow: 0 0 0 6px rgba(21,94,230,0.10); border-color: var(--accent-600); }
 .field:not(:placeholder-shown) + .floating-label, .field:focus + .floating-label { transform: translateY(-1.4rem); font-size: .75rem; color: var(--accent-600); }
 
 /* Toggle basic styling */
@@ -132,7 +132,7 @@
   </div>
 
   <div class="flex justify-end">
-    <button onclick="saveSettings()" class="px-6 py-3 bg-gradient-to-r from-indigo-600 to-cyan-600 text-white rounded-lg shadow">💾 Save Settings</button>
+    <button onclick="saveSettings()" class="px-6 py-3 btn-primary rounded-lg shadow text-white">💾 Save Settings</button>
   </div>
 </main>
 {% endblock %}

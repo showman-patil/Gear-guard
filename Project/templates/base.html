@@ -8,21 +8,39 @@
   <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css" rel="stylesheet">
   <style>
     :root{
-      --accent: #6366f1; /* indigo */
-      --accent-600: #4f46e5;
+      /* Professional palette */
+      --primary: #155EE6; /* deep azure */
+      --primary-600: #0F4EC4;
+      --accent: var(--primary);
+      --accent-600: var(--primary-600);
+      --success: #059669;
+      --success-600: #047857;
+      --danger: #DC2626;
       --muted: #6b7280;
-      --card: rgba(255,255,255,0.9);
+      --card: rgba(255,255,255,0.98);
+      --bg-gradient: linear-gradient(180deg,#f6f9ff 0%, #eef3fb 100%);
+      --brand-gradient: linear-gradient(90deg,var(--primary), var(--primary-600));
     }
-    body{ background: linear-gradient(180deg,#f8fafc 0%, #eef2ff 100%); }
-    .site-header{ background: linear-gradient(90deg, rgba(99,102,241,0.12), rgba(99,102,241,0.04)); }
+    body{ background: var(--bg-gradient); }
+    .site-header{ background: linear-gradient(90deg, rgba(99,102,241,0.06), rgba(99,102,241,0.02)); }
     /* Make header visually separated and ensure fixed positioning is stable */
+    /* Button styles using palette */
+    .btn-primary{ background: var(--brand-gradient); color: #fff; }
+    .btn-primary:hover{ filter: brightness(0.95); }
+    .btn-success{ background: linear-gradient(90deg,var(--success), var(--success-600)); color: #fff; }
+    .btn-accent{ background: linear-gradient(90deg,#7c3aed,#5b21b6); color: #fff; }
+    .btn-neutral{ background: linear-gradient(90deg,#4b5563,#374151); color: #fff; }
+    .btn-primary, .btn-success, .btn-accent, .btn-neutral{ box-shadow: 0 10px 30px rgba(15,78,196,0.12); padding: .5rem .9rem; display:inline-flex; align-items:center; gap:.5rem; }
+    .brand-badge{ background: var(--brand-gradient); }
+    .brand-bg-muted{ background: linear-gradient(90deg, rgba(21,94,230,0.08), rgba(15,78,196,0.06)); }
+    .shadow-soft{ box-shadow: 0 8px 28px rgba(2,6,23,0.06); }
     .site-header{ position: sticky; top: 0; z-index: 40; backdrop-filter: blur(6px); background: rgba(255,255,255,0.88); }
     .container{ max-width: 1100px; margin: 0 auto; padding: 1.25rem; position:relative; }
     .card{ background: var(--card); border-radius: 12px; box-shadow: 0 10px 30px rgba(2,6,23,0.06); }
     a.brand{ font-weight:700; color:var(--accent-600); }
     /* Form field helpers */
     .field{ padding: .5rem .75rem; border-radius: .5rem; border: 1px solid #e5e7eb; background: #fff; }
-    .field:focus{ outline: none; box-shadow: 0 0 0 4px rgba(99,102,241,0.08); border-color: var(--accent-600); }
+    .field:focus{ outline: none; box-shadow: 0 0 0 4px rgba(21,94,230,0.12); border-color: var(--accent-600); }
     /* Kanban card */
     .kanban-card{ background:#fff; padding: .75rem; border-radius: .6rem; box-shadow: 0 4px 14px rgba(2,6,23,0.04); }
     .empty{ padding: .6rem; color: #9ca3af; font-size: .9rem; text-align:center; }
@@ -55,7 +73,7 @@
     <div class="container flex items-center justify-between gap-4">
       <div class="flex items-center gap-4">
         <a href="/" class="brand flex items-center gap-3">
-          <span class="w-9 h-9 rounded-lg bg-gradient-to-br from-indigo-500 to-purple-500 flex items-center justify-center text-white font-bold text-sm">GG</span>
+          <span class="w-9 h-9 rounded-lg brand-badge flex items-center justify-center text-white font-bold text-sm">GG</span>
           <div class="hidden sm:block">
             <div class="text-lg font-bold text-gray-900">GearGuard</div>
             <div class="text-xs text-gray-500">Maintenance Suite</div>
@@ -86,8 +104,8 @@
 
       <!-- Right actions -->
       <div class="flex items-center gap-3">
-        <a href="{% url 'equipment_add' %}" class="hidden md:inline-flex items-center gap-2 px-3 py-2 bg-gradient-to-r from-indigo-600 to-cyan-600 text-white rounded-md text-sm shadow">+ Equipment</a>
-        <a href="{% url 'maintenance_add' %}" class="hidden md:inline-flex items-center gap-2 px-3 py-2 bg-gradient-to-r from-green-500 to-green-600 text-white rounded-md text-sm shadow">+ Request</a>
+        <a href="{% url 'equipment_add' %}" class="hidden md:inline-flex items-center gap-2 px-3 py-2 btn-primary rounded-md text-sm shadow text-white">+ Equipment</a>
+        <a href="{% url 'maintenance_add' %}" class="hidden md:inline-flex items-center gap-2 px-3 py-2 btn-success rounded-md text-sm shadow text-white">+ Request</a>
 
         <button id="notifBtn" class="p-2 rounded-full bg-white border shadow-sm text-gray-700" aria-label="Notifications">
           <i class="fa-solid fa-bell"></i>
