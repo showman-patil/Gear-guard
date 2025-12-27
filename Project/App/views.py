@@ -31,8 +31,15 @@ def dashboard(request):
         status__in=['new', 'in_progress']
     ).select_related('equipment', 'assigned_to').order_by('scheduled_date')[:10]  # Limit to 10
     
+    overdue_list = []
+    for req in overdue_requests:
+        overdue_list.append({
+            'eq': req.equipment.name,
+            'tech': req.assigned_to.get_full_name() if req.assigned_to else '-',
+            'date': req.scheduled_date.strftime('%b %d, %Y') if req.scheduled_date else '-'
+        })
+    
     # Create notifications for overdue requests
-    from accounts.models import Notification
     for req in overdue_requests:
         # Check if notification already exists
         exists = Notification.objects.filter(
@@ -57,6 +64,13 @@ def dashboard(request):
         scheduled_date__gte=timezone.now().date(),
         status='new'
     ).select_related('equipment').order_by('scheduled_date')[:10]
+    
+    upcoming_list = []
+    for req in upcoming_requests:
+        upcoming_list.append({
+            'eq': req.equipment.name,
+            'date': req.scheduled_date.strftime('%b %d, %Y') if req.scheduled_date else '-'
+        })
     
     # Create notifications for upcoming requests
     for req in upcoming_requests:
